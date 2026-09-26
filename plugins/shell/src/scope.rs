@@ -140,6 +140,7 @@ impl ScopeAllowedArg {
 }
 
 /// Scope for the open command
+#[derive(Clone)]
 pub struct OpenScope {
     /// The validation regex that `shell > open` paths must match against.
     /// When set to `None`, no values are accepted.
@@ -223,11 +224,7 @@ impl OpenScope {
 
         // The prevention of argument escaping is handled by the usage of std::process::Command::arg by
         // the `open` dependency. This behavior should be re-confirmed during upgrades of `open`.
-        match with.map(Program::name) {
-            Some(program) => ::open::with_detached(path, program),
-            None => ::open::that_detached(path),
-        }
-        .map_err(Into::into)
+        crate::open::open_unchecked(path, with).map_err(Into::into)
     }
 }
 

@@ -129,10 +129,17 @@ pub fn open<P: AsRef<str>>(
         scope.open(path.as_ref(), with).map_err(Into::into)
     } else {
         // when running directly from Rust code we don't need to validate the path
-        match with.map(Program::name) {
-            Some(program) => ::open::with_detached(path.as_ref(), program),
-            None => ::open::that_detached(path.as_ref()),
-        }
-        .map_err(Into::into)
+        open_unchecked(path.as_ref(), with).map_err(Into::into)
+    }
+}
+
+// Shared by Rust calls and OpenScope, *after* its existing JS scope validation.
+pub(crate) fn open_unchecked(path: &str, with: Option<Program>) -> std::io::Result<()> {
+    #[cfg(target_env = "ohos")]
+    return tauri_plugin_opener::ohos::open_url(path, with.map(Program::name));
+    #[cfg(not(target_env = "ohos"))]
+    match with.map(Program::name) {
+        Some(program) => ::open::with_detached(path, program),
+        None => ::open::that_detached(path),
     }
 }

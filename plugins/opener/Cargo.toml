@@ -19,6 +19,7 @@ linux = { level = "full", notes = "" }
 macos = { level = "full", notes = "" }
 android = { level = "partial", notes = "Only allows to open URLs via `open`" }
 ios = { level = "partial", notes = "Only allows to open URLs via `open`" }
+ohos = { level = "partial", notes = "URLs and files via host UIAbility adapter; reveal and named applications unsupported" }
 
 
 [build-dependencies]
@@ -31,9 +32,11 @@ serde = { workspace = true }
 serde_json = { workspace = true }
 tauri = { workspace = true }
 thiserror = { workspace = true }
-open = { version = "5", features = ["shellexecute-on-windows"] }
 glob = { workspace = true }
 dunce = { workspace = true }
+
+[target.'cfg(not(target_env = "ohos"))'.dependencies]
+open = { version = "5", features = ["shellexecute-on-windows"] }
 
 [target."cfg(windows)".dependencies.windows]
 version = "0.61"
@@ -46,7 +49,7 @@ features = [
   "Win32_Storage_FileSystem",
 ]
 
-[target."cfg(any(target_os = \"linux\", target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"netbsd\", target_os = \"openbsd\"))".dependencies]
+[target."cfg(any(all(target_os = \"linux\", not(target_env = \"ohos\")), target_os = \"dragonfly\", target_os = \"freebsd\", target_os = \"netbsd\", target_os = \"openbsd\"))".dependencies]
 zbus = { workspace = true }
 url = { workspace = true }
 

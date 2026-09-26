@@ -4,8 +4,11 @@
 
 //! Types and functions related to shell.
 
-use std::{ffi::OsStr, path::Path};
+#[cfg(not(target_env = "ohos"))]
+use std::ffi::OsStr;
+use std::path::Path;
 
+#[cfg(not(target_env = "ohos"))]
 pub(crate) fn open<P: AsRef<OsStr>, S: AsRef<str>>(path: P, with: Option<S>) -> crate::Result<()> {
     match with {
         Some(program) => ::open::with_detached(path, program.as_ref()),
@@ -32,6 +35,9 @@ pub(crate) fn open<P: AsRef<OsStr>, S: AsRef<str>>(path: P, with: Option<S>) -> 
 /// ```
 pub fn open_url<P: AsRef<str>, S: AsRef<str>>(url: P, with: Option<S>) -> crate::Result<()> {
     let url = url.as_ref();
+    #[cfg(target_env = "ohos")]
+    return crate::ohos::open_url(url, with.as_ref().map(AsRef::as_ref)).map_err(Into::into);
+    #[cfg(not(target_env = "ohos"))]
     open(url, with)
 }
 
@@ -57,5 +63,8 @@ pub fn open_path<P: AsRef<Path>, S: AsRef<str>>(path: P, with: Option<S>) -> cra
         // Returns an IO error if not exists, and besides `exists()` is a shorthand for `metadata()`
         _ = path.metadata()?;
     }
+    #[cfg(target_env = "ohos")]
+    return crate::ohos::open_path(path, with.as_ref().map(AsRef::as_ref)).map_err(Into::into);
+    #[cfg(not(target_env = "ohos"))]
     open(path, with)
 }

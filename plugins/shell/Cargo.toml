@@ -23,6 +23,7 @@ linux = { level = "full", notes = "" }
 macos = { level = "full", notes = "" }
 android = { level = "partial", notes = "Only allows to open URLs via `open`" }
 ios = { level = "partial", notes = "Only allows to open URLs via `open`" }
+ohos = { level = "partial", notes = "URLs via opener UIAbility adapter; processes restricted by application sandbox" }
 
 [build-dependencies]
 tauri-plugin = { workspace = true, features = ["build"] }
@@ -38,9 +39,14 @@ log = { workspace = true }
 thiserror = { workspace = true }
 shared_child = "1"
 regex = "1"
-open = { version = "5", features = ["shellexecute-on-windows"] }
 encoding_rs = "0.8"
 os_pipe = "1"
+
+[target.'cfg(not(target_env = "ohos"))'.dependencies]
+open = { version = "5", features = ["shellexecute-on-windows"] }
+
+[target.'cfg(target_env = "ohos")'.dependencies]
+tauri-plugin-opener = { path = "../opener", version = "2.5.4" }
 
 [target.'cfg(target_os = "ios")'.dependencies]
 tauri = { workspace = true, features = ["wry"] }

@@ -6,7 +6,7 @@ use std::path::Path;
 
 use tauri::{plugin::TauriPlugin, Manager, Runtime};
 
-#[cfg(mobile)]
+#[cfg(any(target_os = "android", target_os = "ios"))]
 use tauri::plugin::PluginHandle;
 #[cfg(target_os = "android")]
 const PLUGIN_IDENTIFIER: &str = "app.tauri.opener";
@@ -16,6 +16,8 @@ tauri::ios_plugin_binding!(init_plugin_opener);
 mod commands;
 mod config;
 mod error;
+#[cfg(target_env = "ohos")]
+pub mod ohos;
 mod open;
 mod reveal_item_in_dir;
 mod scope;
@@ -32,9 +34,9 @@ pub use reveal_item_in_dir::{reveal_item_in_dir, reveal_items_in_dir};
 pub struct Opener<R: Runtime> {
     // we use `fn() -> R` to silence the unused generic error
     // while keeping this struct `Send + Sync` without requiring `R` to be
-    #[cfg(not(mobile))]
+    #[cfg(not(any(target_os = "android", target_os = "ios")))]
     _marker: std::marker::PhantomData<fn() -> R>,
-    #[cfg(mobile)]
+    #[cfg(any(target_os = "android", target_os = "ios"))]
     mobile_plugin_handle: PluginHandle<R>,
     require_literal_leading_dot: Option<bool>,
 }
@@ -84,7 +86,7 @@ impl<R: Runtime> Opener<R> {
     /// ## Platform-specific:
     ///
     /// - **Android / iOS**: Always opens using default program, unless `with` is provided as "inAppBrowser".
-    #[cfg(mobile)]
+    #[cfg(any(target_os = "android", target_os = "ios"))]
     pub fn open_url(&self, url: impl Into<String>, with: Option<impl Into<String>>) -> Result<()> {
         self.mobile_plugin_handle
             .run_mobile_plugin(
@@ -142,7 +144,7 @@ impl<R: Runtime> Opener<R> {
     /// ## Platform-specific:
     ///
     /// - **Android / iOS**: Always opens using default program.
-    #[cfg(mobile)]
+    #[cfg(any(target_os = "android", target_os = "ios"))]
     pub fn open_path(
         &self,
         path: impl Into<String>,
@@ -151,6 +153,22 @@ impl<R: Runtime> Opener<R> {
         self.mobile_plugin_handle
             .run_mobile_plugin("open", path.into())
             .map_err(Into::into)
+    }
+
+    /// Open a URL through the host UIAbility. Call off the ArkTS UI thread.
+    #[cfg(target_env = "ohos")]
+    pub fn open_url(&self, url: impl Into<String>, with: Option<impl Into<String>>) -> Result<()> {
+        crate::open_url(url.into(), with.map(Into::into))
+    }
+
+    /// Open a file through the host UIAbility. Call off the ArkTS UI thread.
+    #[cfg(target_env = "ohos")]
+    pub fn open_path(
+        &self,
+        path: impl Into<String>,
+        with: Option<impl Into<String>>,
+    ) -> Result<()> {
+        crate::open_path(path.into(), with.map(Into::into))
     }
 
     pub fn reveal_item_in_dir<P: AsRef<Path>>(&self, p: P) -> Result<()> {
@@ -215,9 +233,9 @@ impl Builder {
                 let handle = api.register_ios_plugin(init_plugin_opener)?;
 
                 app.manage(Opener {
-                    #[cfg(not(mobile))]
+                    #[cfg(not(any(target_os = "android", target_os = "ios")))]
                     _marker: std::marker::PhantomData::<fn() -> R>,
-                    #[cfg(mobile)]
+                    #[cfg(any(target_os = "android", target_os = "ios"))]
                     mobile_plugin_handle: handle,
                     require_literal_leading_dot: api
                         .config()

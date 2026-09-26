@@ -34,6 +34,11 @@ pub async fn open_url<R: Runtime>(
     );
 
     if scope.is_url_allowed(&url, with.as_deref()) {
+        #[cfg(target_env = "ohos")]
+        return tauri::async_runtime::spawn_blocking(move || app.opener().open_url(url, with))
+            .await
+            .map_err(Error::from)?;
+        #[cfg(not(target_env = "ohos"))]
         app.opener().open_url(url, with)
     } else {
         Err(Error::ForbiddenUrl { url, with })
@@ -63,6 +68,11 @@ pub async fn open_path<R: Runtime>(
     );
 
     if scope.is_path_allowed(Path::new(&path), with.as_deref())? {
+        #[cfg(target_env = "ohos")]
+        return tauri::async_runtime::spawn_blocking(move || app.opener().open_path(path, with))
+            .await
+            .map_err(Error::from)?;
+        #[cfg(not(target_env = "ohos"))]
         app.opener().open_path(path, with)
     } else {
         Err(Error::ForbiddenPath { path, with })

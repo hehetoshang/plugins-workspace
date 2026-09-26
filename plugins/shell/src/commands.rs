@@ -316,5 +316,15 @@ pub async fn open<R: Runtime>(
     path: String,
     with: Option<Program>,
 ) -> crate::Result<()> {
+    #[cfg(target_env = "ohos")]
+    {
+        let scope = shell.open_scope.clone();
+        return tauri::async_runtime::spawn_blocking(move || {
+            crate::open::open(Some(&scope), path, with)
+        })
+        .await
+        .map_err(|error| std::io::Error::other(error.to_string()))?;
+    }
+    #[cfg(not(target_env = "ohos"))]
     crate::open::open(Some(&shell.open_scope), path, with)
 }
