@@ -32,7 +32,11 @@ pub fn reveal_item_in_dir<P: AsRef<Path>>(path: P) -> crate::Result<()> {
         target_os = "netbsd",
         target_os = "openbsd"
     )))]
-    Err(crate::Error::UnsupportedPlatform)
+    {
+        // Preserve the existence check above even on unsupported platforms.
+        let _ = path;
+        Err(crate::Error::UnsupportedPlatform)
+    }
 }
 
 /// Reveal multiple paths in the system's default explorer.

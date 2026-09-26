@@ -19,21 +19,26 @@ pub async fn open_url<R: Runtime>(
     url: String,
     with: Option<String>,
 ) -> crate::Result<()> {
-    let scope = Scope::new(
-        &app,
-        command_scope
-            .allows()
-            .iter()
-            .chain(global_scope.allows())
-            .collect(),
-        command_scope
-            .denies()
-            .iter()
-            .chain(global_scope.denies())
-            .collect(),
-    );
+    // Scope carries PhantomData<R>; Runtime does not require R: Send. Keep
+    // scope evaluation entirely before the await, retaining only its bool.
+    let allowed = {
+        let scope = Scope::new(
+            &app,
+            command_scope
+                .allows()
+                .iter()
+                .chain(global_scope.allows())
+                .collect(),
+            command_scope
+                .denies()
+                .iter()
+                .chain(global_scope.denies())
+                .collect(),
+        );
+        scope.is_url_allowed(&url, with.as_deref())
+    };
 
-    if scope.is_url_allowed(&url, with.as_deref()) {
+    if allowed {
         #[cfg(target_env = "ohos")]
         return tauri::async_runtime::spawn_blocking(move || app.opener().open_url(url, with))
             .await
@@ -53,21 +58,26 @@ pub async fn open_path<R: Runtime>(
     path: String,
     with: Option<String>,
 ) -> crate::Result<()> {
-    let scope = Scope::new(
-        &app,
-        command_scope
-            .allows()
-            .iter()
-            .chain(global_scope.allows())
-            .collect(),
-        command_scope
-            .denies()
-            .iter()
-            .chain(global_scope.denies())
-            .collect(),
-    );
+    // End the non-Send Scope's lexical lifetime before dispatching native work.
+    // Preserve path validation errors and both command/global allow/deny lists.
+    let allowed = {
+        let scope = Scope::new(
+            &app,
+            command_scope
+                .allows()
+                .iter()
+                .chain(global_scope.allows())
+                .collect(),
+            command_scope
+                .denies()
+                .iter()
+                .chain(global_scope.denies())
+                .collect(),
+        );
+        scope.is_path_allowed(Path::new(&path), with.as_deref())?
+    };
 
-    if scope.is_path_allowed(Path::new(&path), with.as_deref())? {
+    if allowed {
         #[cfg(target_env = "ohos")]
         return tauri::async_runtime::spawn_blocking(move || app.opener().open_path(path, with))
             .await
