@@ -1378,7 +1378,9 @@ fn get_dir_size(path: &PathBuf) -> CommandResult<u64> {
     Ok(size)
 }
 
-#[cfg(desktop)]
+// OHOS file:// URLs must pass through resolve_path and the same allow/deny
+// checks as ordinary paths. Do not use the mobile native-URI shortcut below.
+#[cfg(any(desktop, target_env = "ohos"))]
 pub fn resolve_file<R: Runtime>(
     permission: &str,
     webview: &Webview<R>,
@@ -1437,7 +1439,7 @@ fn resolve_file_in_fs<R: Runtime>(
     })
 }
 
-#[cfg(mobile)]
+#[cfg(all(mobile, not(target_env = "ohos")))]
 pub fn resolve_file<R: Runtime>(
     permission: &str,
     webview: &Webview<R>,

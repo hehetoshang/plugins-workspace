@@ -28,7 +28,8 @@ use tauri::{
 mod android;
 mod commands;
 mod config;
-#[cfg(desktop)]
+// OHOS uses standard sandboxed file I/O, not Android/iOS native handles.
+#[cfg(any(desktop, target_env = "ohos"))]
 mod desktop;
 mod error;
 mod file_path;
@@ -42,7 +43,7 @@ mod watcher;
 
 #[cfg(target_os = "android")]
 pub use android::Fs;
-#[cfg(desktop)]
+#[cfg(any(desktop, target_env = "ohos"))]
 pub use desktop::Fs;
 #[cfg(target_os = "ios")]
 pub use ios::Fs;
@@ -500,7 +501,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R, Option<config::Config>> {
                 let fs = ios::init(app, api)?;
                 app.manage(fs);
             }
-            #[cfg(desktop)]
+            #[cfg(any(desktop, target_env = "ohos"))]
             app.manage(Fs(app.clone()));
 
             app.manage(scope);

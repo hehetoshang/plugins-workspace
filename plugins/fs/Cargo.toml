@@ -22,6 +22,7 @@ linux = { level = "full", notes = "No write access to `$RESOURCES` folder" }
 macos = { level = "full", notes = "No write access to `$RESOURCES` folder" }
 android = { level = "partial", notes = "Access is restricted to Application folder by default" }
 ios = { level = "partial", notes = "Access is restricted to Application folder by default" }
+ohos = { level = "partial", notes = "Standard filesystem I/O within the application sandbox; paths and file URLs retain Tauri scope validation; no native document-provider URI bridge" }
 
 [build-dependencies]
 tauri-plugin = { workspace = true, features = ["build"] }
