@@ -1,7 +1,8 @@
 # OpenHarmony adapter
 
-This fork changes only shell/opener. Use the official Tauri `feat/open-harmony`
-branch. Patch **both crates from this same revision** in the application's root
+This adapter changes shell/opener; the fork also supplies the OHOS standard
+filesystem backend documented in `../fs/OHOS.md`. Use the official Tauri
+`feat/open-harmony` branch. Patch **all three crates from this same revision** in the application's root
 Cargo manifest, including when other libraries also depend on them.
 
 Upstream Tauri's OHOS `run_mobile_plugin` transport is not implemented. A host
