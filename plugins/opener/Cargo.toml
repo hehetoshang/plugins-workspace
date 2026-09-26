@@ -1,6 +1,6 @@
 [package]
 name = "tauri-plugin-opener"
-version = "2.5.4"
+version = "2.5.5"
 description = "Open files and URLs using their default application."
 edition = { workspace = true }
 authors = { workspace = true }
@@ -26,6 +26,9 @@ ohos = { level = "partial", notes = "URLs and files via host UIAbility adapter; 
 tauri-plugin = { workspace = true, features = ["build"] }
 schemars = { workspace = true }
 serde = { workspace = true }
+
+[dev-dependencies]
+tauri = { workspace = true, features = ["wry"] }
 
 [dependencies]
 serde = { workspace = true }
