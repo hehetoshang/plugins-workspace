@@ -6631,7 +6631,7 @@ dependencies = [
 
 [[package]]
 name = "tauri-plugin-fs"
-version = "2.5.2"
+version = "2.7.1"
 dependencies = [
  "anyhow",
  "dunce",
@@ -6866,6 +6866,7 @@ dependencies = [
  "shared_child",
  "tauri",
  "tauri-plugin",
+ "tauri-plugin-opener",
  "thiserror 2.0.12",
  "tokio",
 ]

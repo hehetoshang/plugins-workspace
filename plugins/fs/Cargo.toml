@@ -1,11 +1,11 @@
 [package]
 name = "tauri-plugin-fs"
-version = "2.5.2"
+version = "2.7.1"
 description = "Access the file system."
 authors = { workspace = true }
 license = { workspace = true }
-edition = { workspace = true }
-rust-version = { workspace = true }
+edition = "2024"
+rust-version = "1.90"
 repository = { workspace = true }
 links = "tauri-plugin-fs"
 exclude = [
